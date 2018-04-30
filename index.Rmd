@@ -1,6 +1,5 @@
 ---
 title: "Data Viz Project - Terrorism"
-subtitle: "Terrorist Attacks"
 author: "Group 13"
 ---
 
