@@ -1,5 +1,16 @@
 name: "Terrorism Visualisations"
 output_dir: "."
+navbar:
+  title: "Terrorism Visualisations"
+  left:
+    - text: "Terrorist Attacks"
+      href: index.html
+    - text: "State Vulnerability"
+      href: state.html
+    - text: "Terrorist Ideologies"
+      href: ideology.html
+    - text: "Terrorism Networks"
+      href: network.html
 output:
   html_document:
-    theme: paper
+    theme: sandstone

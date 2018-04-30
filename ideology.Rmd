@@ -1,0 +1,469 @@
+---
+title: "Data Viz Project - Terrorism"
+subtitle: "Terrorist Ideologies"
+author: "Group 13"
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+##What Ideologies Drives Terrorist Organizations?
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+library(dplyr)
+library(knitr)
+library(readxl)
+terror <- read_excel("PPT-US_0517dist.xlsx")
+#View(terror)
+terror <- terror[c("DOM_I","PHIL")]
+
+attach(terror)
+terror$IDEO[DOM_I == 1] <- "Extreme Right Wing"
+terror$IDEO[DOM_I == 2] <- "Extreme Left Wing"
+terror$IDEO[DOM_I == 3] <- "Religious"
+terror$IDEO[DOM_I == 4] <- "Ethno-nationalist/Separatist"
+terror$IDEO[DOM_I == 5] <- "Single Issue"
+terror$IDEO[DOM_I == -99] <- "Uncertain"
+detach(terror)
+
+terror = terror[!terror$DOM_I == -99,]
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+#subset by ideologies
+right = terror[terror$DOM_I == 1,]
+left = terror[terror$DOM_I == 2,]
+relig = terror[terror$DOM_I == 3,]
+ethno = terror[terror$DOM_I == 4,]
+single = terror[terror$DOM_I == 5,]
+```
+
+
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+# using text analysis
+library(tm)
+library(stringr)
+right_text <- data.frame(doc_id=right$DOM_I, text=right$PHIL, stringsAsFactors = FALSE)
+df_source_right <- DataframeSource(right_text)
+tm_right <- VCorpus(df_source_right)
+
+# our custom vector of stop words
+
+my_custom_stopwords <- c("group", "philosophical", "movement", "ideological", "philosophically", "philosophy", "philosophies")
+tm2_right <- tm_map(tm_right, content_transformer(tolower))
+tm2_right <- tm_map(tm2_right, removePunctuation)
+tm2_right <- tm_map(tm2_right, removeWords, c(stopwords("en")))
+tm2_right <- tm_map(tm2_right, removeWords, my_custom_stopwords)
+tm2_right <- tm_map(tm2_right, removeNumbers)
+removeNumPunct <- function(x){gsub("[^[:alpha:][:space:]]*", "", x)}
+tm2_right <- tm_map(tm2_right, content_transformer(removeNumPunct))
+tm2_right <- tm_map(tm2_right, stripWhitespace)
+
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+# stemming
+library(SnowballC)
+# Stem all words
+tm_stemmed_right <- tm_map(tm2_right, stemDocument)
+
+# Stem completion
+stemCompletion2 <- function(x, dictionary) {
+   x <- unlist(strsplit(as.character(x), " "))
+   x <- x[x != ""]
+   x <- stemCompletion(x, dictionary=dictionary)
+   x <- paste(x, sep="", collapse=" ")
+   PlainTextDocument(stripWhitespace(x))
+}
+
+tm_all_right <- lapply(tm_stemmed_right, stemCompletion2, 
+                     dictionary=tm2_right)
+
+tm_right <- VCorpus(VectorSource(tm_all_right))
+
+
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+library(tm)
+
+dtm_right<-DocumentTermMatrix(tm_right)
+
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+library(tidytext)
+sotu_td_right <- tidy(dtm_right)
+
+sotu_tf_idf_right <-  sotu_td_right %>%
+                bind_tf_idf(term, document, count) %>%  
+                arrange(desc(tf_idf)) 
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+# top 300 words using count
+top_words_right <- sotu_tf_idf_right %>%
+  group_by(term) %>%
+  summarise(n = sum(count)) %>%
+                top_n(n = 300, wt = n)  %>%
+                ungroup() %>%
+                mutate(term = reorder(term, n))
+# Load wordcloud package
+library(wordcloud)
+# Set seed - to make your word cloud reproducible 
+set.seed(1)
+# Create purple_gradient
+blue_gradient <- brewer.pal(10, "Blues")
+# Drop 2 faintest colors
+blue_gradient <- blue_gradient[-(1:2)]
+
+```
+
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+# using text analysis - left wing
+library(tm)
+left_text <- data.frame(doc_id=left$DOM_I, text=left$PHIL, stringsAsFactors = FALSE)
+df_source_left <- DataframeSource(left_text)
+tm_left <- VCorpus(df_source_left)
+
+
+tm2_left <- tm_map(tm_left, content_transformer(tolower))
+tm2_left <- tm_map(tm2_left, removePunctuation)
+tm2_left <- tm_map(tm2_left, removeWords, c(stopwords("en")))
+tm2_left <- tm_map(tm2_left, removeWords, my_custom_stopwords)
+tm2_left <- tm_map(tm2_left, removeNumbers)
+removeNumPunct <- function(x){gsub("[^[:alpha:][:space:]]*", "", x)}
+tm2_left <- tm_map(tm2_left, content_transformer(removeNumPunct))
+tm2_left <- tm_map(tm2_left, stripWhitespace)
+
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+# stemming
+library(SnowballC)
+# Stem all words
+tm_stemmed_left <- tm_map(tm2_left, stemDocument)
+
+
+
+# Stem completion
+stemCompletion2 <- function(x, dictionary) {
+   x <- unlist(strsplit(as.character(x), " "))
+   x <- x[x != ""]
+   x <- stemCompletion(x, dictionary=dictionary)
+   x <- paste(x, sep="", collapse=" ")
+   PlainTextDocument(stripWhitespace(x))
+}
+
+tm_all_left <- lapply(tm_stemmed_left, stemCompletion2, 
+                     dictionary=tm2_left)
+
+tm_left <- VCorpus(VectorSource(tm_all_left))
+
+
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+library(tm)
+
+dtm_left<-DocumentTermMatrix(tm_left)
+
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+library(tidytext)
+sotu_td_left <- tidy(dtm_left)
+
+
+sotu_tf_idf_left <-  sotu_td_left %>%
+                bind_tf_idf(term, document, count) %>%  
+                arrange(desc(tf_idf)) 
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+# top 300 words using count
+top_words_left <- sotu_tf_idf_left %>%
+  group_by(term) %>%
+  summarise(n = sum(count)) %>%
+                top_n(n = 300, wt = n)  %>%
+                ungroup() %>%
+                mutate(term = reorder(term, n))
+# Load wordcloud package
+library(wordcloud)
+# Set seed - to make your word cloud reproducible 
+set.seed(1)
+# Create purple_gradient
+red_gradient <- brewer.pal(10, "Reds")
+# Drop 2 faintest colors
+red_gradient <- red_gradient[-(1:2)]
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+# using text analysis - religious
+library(tm)
+relig_text <- data.frame(doc_id=relig$DOM_I, text=relig$PHIL, stringsAsFactors = FALSE)
+df_source_relig <- DataframeSource(relig_text)
+tm_relig <- VCorpus(df_source_relig)
+
+
+tm2_relig <- tm_map(tm_relig, content_transformer(tolower))
+tm2_relig <- tm_map(tm2_relig, removePunctuation)
+tm2_relig <- tm_map(tm2_relig, removeWords, c(stopwords("en")))
+tm2_relig <- tm_map(tm2_relig, removeWords, my_custom_stopwords)
+tm2_relig <- tm_map(tm2_relig, removeNumbers)
+removeNumPunct <- function(x){gsub("[^[:alpha:][:space:]]*", "", x)}
+tm2_relig <- tm_map(tm2_relig, content_transformer(removeNumPunct))
+tm2_relig <- tm_map(tm2_relig, stripWhitespace)
+
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE,comment = '', echo=FALSE}
+# stemming
+library(SnowballC)
+# Stem all words
+tm_stemmed_relig <- tm_map(tm2_relig, stemDocument)
+
+# Stem completion
+stemCompletion2 <- function(x, dictionary) {
+   x <- unlist(strsplit(as.character(x), " "))
+   x <- x[x != ""]
+   x <- stemCompletion(x, dictionary=dictionary)
+   x <- paste(x, sep="", collapse=" ")
+   PlainTextDocument(stripWhitespace(x))
+}
+
+tm_all_relig <- lapply(tm_stemmed_relig, stemCompletion2, 
+                     dictionary=tm2_relig)
+
+tm_relig <- VCorpus(VectorSource(tm_all_relig))
+
+
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+library(tm)
+
+dtm_relig<-DocumentTermMatrix(tm_relig)
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+library(tidytext)
+sotu_td_relig <- tidy(dtm_relig)
+
+sotu_tf_idf_relig <-  sotu_td_relig %>%
+                bind_tf_idf(term, document, count) %>%  
+                arrange(desc(tf_idf)) 
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+# top 300 words using count
+top_words_relig <- sotu_tf_idf_relig %>%
+  group_by(term) %>%
+  summarise(n = sum(count)) %>%
+                top_n(n = 300, wt = n)  %>%
+                ungroup() %>%
+                mutate(term = reorder(term, n))
+# Load wordcloud package
+library(wordcloud)
+# Set seed - to make your word cloud reproducible 
+set.seed(1)
+# Create purple_gradient
+green_gradient <- brewer.pal(10, "Greens")
+# Drop 2 faintest colors
+green_gradient <- green_gradient[-(1:2)]
+
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+# using text analysis - ethno
+library(tm)
+ethno_text <- data.frame(doc_id=ethno$DOM_I, text=ethno$PHIL, stringsAsFactors = FALSE)
+df_source_ethno <- DataframeSource(ethno_text)
+tm_ethno <- VCorpus(df_source_ethno)
+
+
+tm2_ethno <- tm_map(tm_ethno, content_transformer(tolower))
+tm2_ethno <- tm_map(tm2_ethno, removePunctuation)
+tm2_ethno <- tm_map(tm2_ethno, removeWords, c(stopwords("en")))
+tm2_ethno <- tm_map(tm2_ethno, removeWords, my_custom_stopwords)
+tm2_ethno <- tm_map(tm2_ethno, removeNumbers)
+removeNumPunct <- function(x){gsub("[^[:alpha:][:space:]]*", "", x)}
+tm2_ethno <- tm_map(tm2_ethno, content_transformer(removeNumPunct))
+tm2_ethno <- tm_map(tm2_ethno, stripWhitespace)
+
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+# stemming
+library(SnowballC)
+# Stem all words
+tm_stemmed_ethno <- tm_map(tm2_ethno, stemDocument)
+
+
+# Stem completion
+stemCompletion2 <- function(x, dictionary) {
+   x <- unlist(strsplit(as.character(x), " "))
+   x <- x[x != ""]
+   x <- stemCompletion(x, dictionary=dictionary)
+   x <- paste(x, sep="", collapse=" ")
+   PlainTextDocument(stripWhitespace(x))
+}
+
+tm_all_ethno <- lapply(tm_stemmed_ethno, stemCompletion2, 
+                     dictionary=tm2_ethno)
+
+tm_ethno <- VCorpus(VectorSource(tm_all_ethno))
+
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+library(tm)
+
+dtm_ethno<-DocumentTermMatrix(tm_ethno)
+
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+library(tidytext)
+sotu_td_ethno <- tidy(dtm_ethno)
+
+sotu_tf_idf_ethno <-  sotu_td_ethno %>%
+                bind_tf_idf(term, document, count) %>%  
+                arrange(desc(tf_idf)) 
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+# top 300 words using count
+top_words_ethno <- sotu_tf_idf_ethno %>%
+  group_by(term) %>%
+  summarise(n = sum(count)) %>%
+                top_n(n = 300, wt = n)  %>%
+                ungroup() %>%
+                mutate(term = reorder(term, n))
+# Load wordcloud package
+library(wordcloud)
+# Set seed - to make your word cloud reproducible 
+set.seed(1)
+# Create purple_gradient
+purple_gradient <- brewer.pal(10, "Purples")
+# Drop 2 faintest colors
+purple_gradient <- purple_gradient[-(1:2)]
+
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+# using text analysis - single
+library(tm)
+single_text <- data.frame(doc_id=single$DOM_I, text=single$PHIL, stringsAsFactors = FALSE)
+df_source_single <- DataframeSource(single_text)
+tm_single <- VCorpus(df_source_single)
+
+
+tm2_single <- tm_map(tm_single, content_transformer(tolower))
+tm2_single <- tm_map(tm2_single, removePunctuation)
+tm2_single <- tm_map(tm2_single, removeWords, c(stopwords("en")))
+tm2_single <- tm_map(tm2_single, removeWords, my_custom_stopwords)
+tm2_single <- tm_map(tm2_single, removeNumbers)
+removeNumPunct <- function(x){gsub("[^[:alpha:][:space:]]*", "", x)}
+tm2_single <- tm_map(tm2_single, content_transformer(removeNumPunct))
+tm2_single <- tm_map(tm2_single, stripWhitespace)
+
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+# stemming
+library(SnowballC)
+# Stem all words
+tm_stemmed_single <- tm_map(tm2_single, stemDocument)
+
+# Stem completion
+stemCompletion2 <- function(x, dictionary) {
+   x <- unlist(strsplit(as.character(x), " "))
+   x <- x[x != ""]
+   x <- stemCompletion(x, dictionary=dictionary)
+   x <- paste(x, sep="", collapse=" ")
+   PlainTextDocument(stripWhitespace(x))
+}
+
+tm_all_single <- lapply(tm_stemmed_single, stemCompletion2, 
+                     dictionary=tm2_single)
+
+tm_single <- VCorpus(VectorSource(tm_all_single))
+
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+library(tm)
+
+dtm_single<-DocumentTermMatrix(tm_single)
+
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+library(tidytext)
+sotu_td_single <- tidy(dtm_single)
+
+
+sotu_tf_idf_single <-  sotu_td_single %>%
+                bind_tf_idf(term, document, count) %>%  
+                arrange(desc(tf_idf)) 
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+# top 300 words using count
+top_words_single <- sotu_tf_idf_single %>%
+  group_by(term) %>%
+  summarise(n = sum(count)) %>%
+                top_n(n = 300, wt = n)  %>%
+                ungroup() %>%
+                mutate(term = reorder(term, n))
+# Load wordcloud package
+library(wordcloud)
+# Set seed - to make your word cloud reproducible 
+set.seed(1)
+# Create purple_gradient
+orange_gradient <- brewer.pal(10, "Oranges")
+# Drop 2 faintest colors
+orange_gradient <- orange_gradient[-(7:10)]
+
+```
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+layout(matrix(c(2, 1), nrow=1), heights=c(1, 4))
+par(mar=rep(0, 4))
+plot.new()
+text(x=0.5, y=0.5, "Right-Wing")
+wordcloud(top_words_right$term, top_words_right$n, 
+         max.words = 100, scale=c(2, .2), random.order = FALSE, random.color = FALSE,colors = blue_gradient, main = "Title")
+plot.new()
+text(x=0.5, y=0.5, "Left-Wing")
+wordcloud(top_words_left$term, top_words_left$n, 
+         max.words = 100, scale=c(2, .2), random.order = FALSE, random.color = FALSE,colors = red_gradient)
+plot.new()
+text(x=0.5, y=0.5, "Religious")
+wordcloud(top_words_relig$term, top_words_relig$n, 
+         max.words = 100, scale=c(2, .2), random.order = FALSE, random.color = FALSE,colors = green_gradient)
+plot.new()
+text(x=0.5, y=0.5, "Ethno-nationalist")
+wordcloud(top_words_ethno$term, top_words_ethno$n, 
+         max.words = 100,scale=c(2, .2), random.order = FALSE, random.color = FALSE, colors = purple_gradient)
+plot.new()
+text(x=0.5, y=0.5, "Single Issue")
+wordcloud(top_words_single$term, top_words_single$n, 
+         max.words = 100,scale=c(2, .2), random.order = FALSE, random.color = FALSE,colors =orange_gradient)
+```
+
+The founding philosophy describes the group's mission, raison d'etre and epistemological concerns. To investigate the similarities and differences in missions across the ideologies, the word clouds above show the most frequent terms used in describing the founding philosophies of different idologies, colour coded by ideology type.
+
+Comparing the terms used in the founding philosophy across the 5 dominant ideologies, there appears to be a common theme of race driving the 5 ideologies, while each taking a different stance, suggestive of groups under these ideologies sparked by racial discontent. Examining the top race-affiliated words for each ideology, there is an apparent difference in racial stance for the first 4 ideologies, with Right-Wing groups focusing on "white", Left-Wing groups focusing on "black", Religious groups on "muslim" and Ethno-nationalist on "jewish'.
+
+In addition, there appears to be a common theme of religion with the Right-Wing and Religious groups, with common top words like "christian", albeit the latter ideology having missions mostly related to "islam".
+
+Moreover, the Left-Wing and Ethno-nationalist appear to have similar philosophies driven by missions for freedom with words like "struggle", "oppressed" and "independence", while the Right-Wing has more "political" and "federal" concerns. 
+
+Lastly, the Single Issue groups appear to be driven by a wide spectrum of concerns, with similar concerns with the other ideologies like "government" and "liberation", but also entirely different issues such as "animal", "cuban" and "environment".
+
