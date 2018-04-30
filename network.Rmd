@@ -1,17 +1,13 @@
 ---
-title: "Data Viz Project - Terrorism"
-subtitle: "Terrorist Ideologies"
-author: "Group 13"
+title: "How Do Terrorist Organisations Interact?"
+output: html_document
 ---
-
 <style>
 body {
 text-align: justify}
 </style>
 
-## How Do Terrorist Organisations Interact?
-
-```{r, dpi=300, fig.align='center', fig.height = 8, fig.width = 8, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+```{r, dpi=250, fig.align='center', fig.height = 7, fig.width = 7, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
 
 #STATIC NETWORK
 
@@ -107,7 +103,7 @@ visNetwork(nodes, links , width="100%", height="500px", main="Terrorist Networks
 
 In the network visualisation, the colour of the nodes represent the ideology of a terrorist organisation, the size of the node represents the number of years the organisation has been active for, and the line type of each edge represents whether an edge is between nodes who subscribe to the same or different ideologies.
 
-From the visualisation, we find terrorist networks are organised into one large interconnected component and five smaller disparate components. The five smaller disparate components are more or less homogenous by ideology and in the large interconnected component, terrorist organisations with the same ideology cluster together,
+From the visualisation, we find terrorist networks are organised into one large interconnected component and five smaller disparate components. The five smaller disparate components are more or less homogenous by ideology and in the large interconnected component, terrorist organisations with the same ideology cluster together.
 
 From the names of the terrorist organisations in the five smaller disparate components, we can roughly tell that they comprise a far-right White Nationalist group, a fundamentalist Islamic group, a Cuban ethno-nationalist group, a Zionist group and an anti-communist group. 
 

@@ -1,15 +1,12 @@
 ---
-title: "Data Viz Project - Terrorism"
-subtitle: "State Vulnerability"
-author: "Group 13"
+title: "Are Some States More Vulnerable To Terrorist Attacks Than Others?"
+output: html_document
 ---
 
 <style>
 body {
 text-align: justify}
 </style>
-
-## Are Some States More Vulnerable To Terrorist Attacks Than Others?
 
 ```{r Setup, include=FALSE, results='hide', warning=FALSE, comment = '', echo=FALSE}
 

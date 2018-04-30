@@ -1,0 +1,166 @@
+---
+title: "How, When and Where Do Terrorists Attack?"
+output: html_document
+---
+
+<style>
+body {
+text-align: justify}
+</style>
+
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+library(readr)
+terror <- read_csv("ussubset.csv")
+
+# Bar graph for types of attacks 
+library(ggplot2)
+library(ggthemes)
+library(dplyr)
+
+terror$Ideology <- terror$DOM_I
+terror <- terror %>% 
+  group_by(attacktype1) %>% 
+  mutate(total = n())
+  
+terror1 <- arrange(terror, total)
+terror1$attacktype1 <- factor(terror1$attacktype1, levels = rev(unique(terror1$attacktype1)))
+
+
+gg_type <- ggplot(terror, aes(x = attacktype1_txt, fill = Ideology)) + 
+  geom_bar(width = 0.5) + 
+  geom_text(aes(x = attacktype1_txt, y = total, label = total), 
+            hjust = -0.1, 
+            size = 3.5, 
+            check_overlap = TRUE) + 
+  expand_limits(y = c(0, 120)) +
+  coord_flip() + 
+  scale_fill_manual(values = c("purple", "red", "darkgreen", "blue", "orange", "grey")) +
+  theme_economist_white(base_size = 8) + 
+  xlab("Type of Attack") + 
+  ylab("Number of Attacks") +
+  labs(title = "Attack Count for the Different Types of Attacks")
+
+gg_type
+```
+
+Armed Assualts are the most common form of terrorist attacks, followed by assassination and then bombing. 
+
+For armed assault attacks, a large majority of the terrorism groups adopt the left-wing and right-wing ideologies.
+
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+library(plotly)
+terror2 <- terror %>% 
+  group_by(iyear, Ideology) %>% 
+  mutate(total = n(), 
+         nkills = sum(nkill))
+
+terror_left <- filter(terror2, Ideology == "Left-Wing")
+terror_right <- filter(terror2, Ideology == "Right-Wing")
+
+
+plot1 <- ggplot(terror2, aes(x = iyear,y = total, 
+                                label = nkills)) +    
+  geom_line(aes(colour = Ideology), na.rm = TRUE) + 
+  ylab("Number of Attacks each year") + xlab("Year") + 
+  labs(title = "Number of Attacks over time") + 
+  theme_economist_white() + 
+  theme(axis.text.x = element_text(size = 7.5))
+ggplotly(plot1)
+
+g <- terror2 %>% group_by(Ideology) %>% 
+  plot_ly() %>% layout(title = "Line graph for Number of Attacks over time", 
+                       xaxis = list(title = "Year"), 
+                       yaxis = list(title = "Number of Attacks")) %>%
+  add_lines(x = terror2$iyear, y = terror2$total, 
+            alpha = 0.2, name = "Other Ideologies", 
+            hoverinfo = 'text', 
+           text = ~paste('</br> Year: ', iyear, 
+                        '</br> Number of Attacks: ', total, 
+                        '</br> Number of Fatalities: ', nkills, 
+                        '</br> Ideology: ', Ideology),
+            type = "scatter", mode = "lines",
+            line = list(color = 'rgba(192,192,192,0.4)')) 
+
+g %>%  add_lines(x = terror_left$iyear, y = terror_left$total, 
+           name = "Left-Wing", 
+            hoverinfo = 'text', 
+          text = ~paste('</br> Year: ', terror_left$iyear, 
+                        '</br> Number of Attacks: ', terror_left$total, 
+                        '</br> Number of Fatalities: ', terror_left$nkills, 
+                        '</br> Ideology: ', terror_left$Ideology), 
+          type = "scatter", mode = "lines", line = list(color = c('red'))) %>% 
+  add_lines(x = terror_right$iyear, y = terror_right$total, 
+           name = "Right-Wing", 
+           hoverinfo = 'text', 
+          text = ~paste('</br> Year: ', terror_right$iyear, 
+                        '</br> Number of Attacks: ', terror_right$total, 
+                        '</br> Number of Fatalities: ', terror_right$nkills, 
+                        '</br> Ideology: ', terror_right$Ideology), type = "scatter",
+            mode = "lines", line = list(color = c('blue'))) 
+
+```
+
+The number of terror attacks fluctuate erratically across the years, though there seem to be a general decrease in number of attacks.
+
+Terrorist groups adopting the left-wing ideologies were the ones who conducted the most number of terrorist attacks from 1970 to 1973. The worst year would be 1970 where the left-wing terrorist groups were involved in 17 attacks which lead to 19 fatalities. However, the number of attacks decreased subsequently and there has not been any attacks organised by left-wing terrorist groups from 1981 onwards.
+
+On the other hand, the terrorist groups with right-wing ideologies were involved in a moderate number of terror attacks and 7 was the highest number of attacks which they have been involved in the year 1980. But they have still been active in causing terror attacks across the years.
+
+
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+library(rgdal)
+library(leaflet)
+library(dplyr)
+library(plyr)
+library(magrittr)
+library(RColorBrewer)
+library(stringr)
+library(ggplot2)
+library(ggthemes)
+us_fatal <- read.csv("ussubset.csv")
+usa <- readOGR('cb_2016_us_state_20m.shp', verbose = FALSE)
+
+us_fatal <- us_fatal[us_fatal$latitude >= 24.7433195,]
+us_fatal <- us_fatal[us_fatal$latitude <= 49.3457868,]
+us_fatal <- us_fatal[us_fatal$longitude >= -124.7844079,]
+us_fatal <- us_fatal[us_fatal$longitude <= -66.9513812,]
+
+us_fatal_2010  <- subset(us_fatal, attackdecade==2010)
+us_fatal_2000  <- subset(us_fatal, attackdecade==2000)
+us_fatal_1990  <- subset(us_fatal, attackdecade==1990)
+us_fatal_1980  <- subset(us_fatal, attackdecade==1980)
+us_fatal_1970  <- subset(us_fatal, attackdecade==1970)
+
+
+pal = colorFactor(c("purple","red","green","blue","orange","black"), domain = us_fatal$DOM_I) 
+color_ideology_2010 = pal(us_fatal_2010$DOM_I)
+color_ideology_2000 = pal(us_fatal_2000$DOM_I)
+color_ideology_1990 = pal(us_fatal_1990$DOM_I)
+color_ideology_1980 = pal(us_fatal_1980$DOM_I)
+color_ideology_1970 = pal(us_fatal_1970$DOM_I)
+
+leaflet(usa, width ="100%", height = "400px" ) %>% setView(lat=33, lng=-103 , zoom=3.5) %>% addPolygons(stroke = TRUE, smoothFactor = 0.5, weight=1, color='#333333', opacity=0.5, fillColor = "white", label = usa@data$NAME) %>% 
+  addCircleMarkers(group="2010 attacks", data=us_fatal_2010, lng = ~longitude, lat = ~latitude, color=color_ideology_2010, fillColor=color_ideology_2010, radius=2*sqrt(us_fatal_2010$nkill), weight=1, opacity = 1,  popup = paste("Perpetrator:",us_fatal_2010$gname,"<br/>", "State:",us_fatal_2010$provstate,"<br/>", "Date of Attack:", us_fatal_2010$date,"<br/>", "Ideology:", us_fatal_2010$DOM_I,"<br/>", "Number of Fatalities:", us_fatal_2010$nkill, "<br/>", "Attack Type:",  us_fatal_2010$attacktype1_txt, "<br/>")) %>%
+  
+  addCircleMarkers(group="2000 attacks", data=us_fatal_2000, lng = ~longitude, lat = ~latitude, color=color_ideology_2000, fillColor=color_ideology_2000, radius=2*sqrt(us_fatal_2000$nkill), weight=1, opacity = 1,  popup = paste("Perpetrator:",us_fatal_2000$gname,"<br/>","State:", us_fatal_2000$provstate,"<br/>","Date of Attack:", us_fatal_2000$date,"<br/>", "Ideology:", us_fatal_2000$DOM_I,"<br/>", "Number of Fatalities:", us_fatal_2000$nkill, "<br/>", "Attack Type:",  us_fatal_2000$attacktype1_txt, "<br/>")) %>%
+  
+  addCircleMarkers(group="1990 attacks", data=us_fatal_1990, lng = ~longitude, lat = ~latitude, color=color_ideology_1990, fillColor=color_ideology_1990, radius=2*sqrt(us_fatal_1990$nkill), weight=1, opacity = 1,  popup = paste("Perpetrator:",us_fatal_1990$gname,"<br/>","State:", us_fatal_1990$provstate,"<br/>", "Date of Attack:", us_fatal_1990$date,"<br/>", "Ideology:", us_fatal_1990$DOM_I,"<br/>", "Number of Fatalities:", us_fatal_1990$nkill, "<br/>", "Attack Type:",  us_fatal_1990$attacktype1_txt, "<br/>")) %>%
+ 
+   addCircleMarkers(group="1980 attacks", data=us_fatal_1980, lng = ~longitude, lat = ~latitude, color=color_ideology_1980, fillColor=color_ideology_1980, radius=2*sqrt(us_fatal_1980$nkill), weight=1, opacity = 1,  popup = paste("Perpetrator:",us_fatal_1980$gname,"State:", us_fatal_1980$provstate,"<br/>","<br/>","Date of Attack:", us_fatal_1980$date,"<br/>", "Ideology:", us_fatal_1980$DOM_I,"<br/>", "Number of Fatalities:", us_fatal_1980$nkill, "<br/>", "Attack Type:",  us_fatal_1980$attacktype1_txt, "<br/>")) %>%
+  
+  addCircleMarkers(group="1970 attacks", data=us_fatal_1970, lng = ~longitude, lat = ~latitude, color=color_ideology_1970, fillColor=color_ideology_1970, radius=2*sqrt(us_fatal_1970$nkill), weight=1, opacity = 1,  popup = paste("Perpetrator:",us_fatal_1970$gname,"<br/>","State:", us_fatal_1970$provstate,"<br/>","Date of Attack:", us_fatal_1970$date,"<br/>", "Ideology:", us_fatal_1970$DOM_I,"<br/>", "Number of Fatalities:", us_fatal_1970$nkill, "<br/>", "Attack Type:",  us_fatal_1970$attacktype1_txt, "<br/>")) %>%
+  addLegend(pal = pal, values = ~us_fatal$DOM_I, title = "Ideology of Perpetrator", position = "bottomright") %>%
+    addLayersControl(
+overlayGroups = c("2010 attacks","2000 attacks", "1990 attacks", "1980 attacks", "1970 attacks"),
+options = layersControlOptions(collapsed = TRUE))  %>% hideGroup("2000 attacks") %>% hideGroup("1990 attacks") %>% hideGroup("1980 attacks") %>% hideGroup("1970 attacks")
+
+```
+
+To build on the earlier visualizations of summary statistics of the terrorist attacks, the leaflet map above shows the location of the attacks across the years (different layers). The locations are color-coded according to the ideology of the perpetrator as shown in the legend, and sized according to the number of fatilities. Specifics of the attacks including information on the perpetrator, state, date of attack, and type of attack are detailed in pop-ups when the markers are clicked.
+
+The following are some noteworthy trends from this visualization. Firstly, the number of attacks seem to be decreasing over time as later decades have fewer markers on the map. However, the number of fatilites stemming from each attack tend to be larger for the later attacks as indicated by the larger radius of the markers for the layers corresponding to later decades. Secondly, most of the attacks tend to be driven by religious or right-wing ideologies since most of the markers are either blue or green. Thirdly, attacks occur more frequently in the east coast area around New York and the west coast area around California. The notorious 9/11 attack stands out in this visualization with the large green circle marker in the layer corresponding to 2000-2010 attacks.
+
+From the aforementioned takeaways from the visualization, we can infer that security has probably improved in terms of reducing the number of attacks but concurrently, terrorists seem to be going for more major attacks that will result in more fatalities. Moreover, we should be wary of conflicts relating to religious or right-wing ideologies as those seem to be prone to result in a terrorist attack. Finally, the coastal areas should be more wary as they are more likely targets of a terrorist attack.
+

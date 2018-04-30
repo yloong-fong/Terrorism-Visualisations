@@ -1,15 +1,11 @@
 ---
-title: "Data Viz Project - Terrorism"
-subtitle: "Terrorist Ideologies"
-author: "Group 13"
+title: "What Ideologies Drive Terrorist Organizations?"
+output: html_document
 ---
-
 <style>
 body {
 text-align: justify}
 </style>
-
-##What Ideologies Drives Terrorist Organizations?
 
 ```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
 library(dplyr)
@@ -106,11 +102,11 @@ sotu_tf_idf_right <-  sotu_td_right %>%
 ```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
 # top 300 words using count
 top_words_right <- sotu_tf_idf_right %>%
-  group_by(term) %>%
-  summarise(n = sum(count)) %>%
-                top_n(n = 300, wt = n)  %>%
-                ungroup() %>%
-                mutate(term = reorder(term, n))
+  dplyr::group_by(term) %>%
+  dplyr::summarise(n = sum(count)) %>%
+                dplyr::top_n(n = 300, wt = n)  %>%
+                dplyr::ungroup() %>%
+                dplyr::mutate(term = reorder(term, n))
 # Load wordcloud package
 library(wordcloud)
 # Set seed - to make your word cloud reproducible 
@@ -187,11 +183,11 @@ sotu_tf_idf_left <-  sotu_td_left %>%
 ```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
 # top 300 words using count
 top_words_left <- sotu_tf_idf_left %>%
-  group_by(term) %>%
-  summarise(n = sum(count)) %>%
-                top_n(n = 300, wt = n)  %>%
-                ungroup() %>%
-                mutate(term = reorder(term, n))
+  dplyr::group_by(term) %>%
+  dplyr::summarise(n = sum(count)) %>%
+                dplyr::top_n(n = 300, wt = n)  %>%
+                dplyr::ungroup() %>%
+                dplyr::mutate(term = reorder(term, n))
 # Load wordcloud package
 library(wordcloud)
 # Set seed - to make your word cloud reproducible 
@@ -262,11 +258,11 @@ sotu_tf_idf_relig <-  sotu_td_relig %>%
 ```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
 # top 300 words using count
 top_words_relig <- sotu_tf_idf_relig %>%
-  group_by(term) %>%
-  summarise(n = sum(count)) %>%
-                top_n(n = 300, wt = n)  %>%
-                ungroup() %>%
-                mutate(term = reorder(term, n))
+  dplyr::group_by(term) %>%
+  dplyr::summarise(n = sum(count)) %>%
+                dplyr::top_n(n = 300, wt = n)  %>%
+                dplyr::ungroup() %>%
+                dplyr::mutate(term = reorder(term, n))
 # Load wordcloud package
 library(wordcloud)
 # Set seed - to make your word cloud reproducible 
@@ -339,11 +335,11 @@ sotu_tf_idf_ethno <-  sotu_td_ethno %>%
 ```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
 # top 300 words using count
 top_words_ethno <- sotu_tf_idf_ethno %>%
-  group_by(term) %>%
-  summarise(n = sum(count)) %>%
-                top_n(n = 300, wt = n)  %>%
-                ungroup() %>%
-                mutate(term = reorder(term, n))
+  dplyr::group_by(term) %>%
+  dplyr::summarise(n = sum(count)) %>%
+                dplyr::top_n(n = 300, wt = n)  %>%
+                dplyr::ungroup() %>%
+                dplyr::mutate(term = reorder(term, n))
 # Load wordcloud package
 library(wordcloud)
 # Set seed - to make your word cloud reproducible 
@@ -416,11 +412,11 @@ sotu_tf_idf_single <-  sotu_td_single %>%
 ```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
 # top 300 words using count
 top_words_single <- sotu_tf_idf_single %>%
-  group_by(term) %>%
-  summarise(n = sum(count)) %>%
-                top_n(n = 300, wt = n)  %>%
-                ungroup() %>%
-                mutate(term = reorder(term, n))
+  dplyr::group_by(term) %>%
+  dplyr::summarise(n = sum(count)) %>%
+                dplyr::top_n(n = 300, wt = n)  %>%
+                dplyr::ungroup() %>%
+                dplyr::mutate(term = reorder(term, n))
 # Load wordcloud package
 library(wordcloud)
 # Set seed - to make your word cloud reproducible 
