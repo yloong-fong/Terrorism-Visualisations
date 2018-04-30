@@ -273,11 +273,11 @@ terror = terror[!terror$DOM_I == -99,]
 
 ```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
 #subset by ideologies
-right = terror[!terror$DOM_I == 1,]
-left = terror[!terror$DOM_I == 2,]
-relig = terror[!terror$DOM_I == 3,]
-ethno = terror[!terror$DOM_I == 4,]
-single = terror[!terror$DOM_I == 5,]
+right = terror[terror$DOM_I == 1,]
+left = terror[terror$DOM_I == 2,]
+relig = terror[terror$DOM_I == 3,]
+ethno = terror[terror$DOM_I == 4,]
+single = terror[terror$DOM_I == 5,]
 ```
 
 
