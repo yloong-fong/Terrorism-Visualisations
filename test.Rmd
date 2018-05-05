@@ -7,7 +7,7 @@ body {
 text-align: justify}
 </style>
 
-```{r, fig.align='center', out.width = '1000px', echo=FALSE}
+```{r, fig.align='center', out.width = '100%', echo=FALSE}
 knitr::include_app("https://yloong-fong.shinyapps.io/test/",height="500px")
 ```
 
