@@ -53,7 +53,7 @@ Investigating potential trends and differences in attacks by state across time, 
 Analysing trends in frequency of attacks for each state, certain states like California, New York and Texas have experienced attacks across all decades, with the highest number of attacks for California and New York especially in the 1970s. This may be indicative of more focused plans in targeting particular states such as these, where these states tend to have the largest population sizes and hence more frequently targeted (potentially to aim for a bigger impact).
 
 
-```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', fig.width=10, fig.height=10, echo=FALSE}
 library(readxl)
 library(maps)
 library(dplyr)
@@ -68,13 +68,6 @@ us.states <- as.data.frame(us.states)
 us.states <- dplyr::rename(us.states, state = region)
 us.states$subregion = NULL
 us.states$state <- str_to_title(us.states$state)
-
-us_fatal <- read.csv("ussubset.csv")
-us_fatal <- us_fatal[us_fatal$latitude >= 24.7433195,]
-us_fatal <- us_fatal[us_fatal$latitude <= 49.3457868,]
-us_fatal <- us_fatal[us_fatal$longitude >= -124.7844079,]
-us_fatal <- us_fatal[us_fatal$longitude <= -66.9513812,]
-
 library(tidyverse)
 statenames <- as_data_frame(
   cbind(state=state.name, state.abb = state.abb, 
