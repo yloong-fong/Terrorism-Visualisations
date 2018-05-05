@@ -8,7 +8,7 @@ navbar:
     - text: "State Vulnerability"
       href: state.html
     - text: "Terrorist Ideologies"
-      href: ideology.html
+      href: test.html
     - text: "Terrorism Networks"
       href: network.html
 output:
