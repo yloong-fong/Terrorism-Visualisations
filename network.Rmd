@@ -65,11 +65,6 @@ V(network)$Ideology=as.character(data$DOM_I[match(V(network)$name,data$ORGNAME)]
 V(network)$Yearsactive=data$yearsactive[match(V(network)$name,data$ORGNAME)]
 V(network)$Firstdecade=as.character(data$firstdecade[match(V(network)$name,data$ORGNAME)])
 
-set.seed(2104)
-terroristnetwork_df <- ggnetwork(network, layout = "fruchtermanreingold", cell.jitter = 0.75)
-terroristnetwork_df$Ideology <- factor(terroristnetwork_df$Ideology, levels = c("Right-Wing", "Left-Wing", "Religious", "Ethno-nationalist", "Single Issue"))
-terroristnetwork_df$Yearsactive <- as.numeric(terroristnetwork_df$Yearsactive)
-ggplot(terroristnetwork_df, aes(x, y, xend = xend, yend = yend)) + geom_edges(aes(linetype=as.factor(Ideology.match)), alpha = 1, colour="gray") + geom_nodes(aes(color=Ideology, size=Yearsactive), alpha=0.8) + geom_nodelabel_repel(aes(label = vertex.names), label.padding=0.05, size = 2.5, family="Garamond") + ggtitle('Terrorist Networks') + theme_tufte() + theme(legend.position = "bottom", legend.box = "vertical", plot.title = element_text(hjust = 0.5, face='bold', size=14), text=element_text(family="Garamond"), axis.ticks = element_blank(), axis.text = element_blank(), axis.title = element_blank()) + scale_colour_manual(values = c('blue', 'red', 'green', 'purple', 'orange')) + guides(linetype=FALSE, size=guide_legend(title="Years Active"))
 ```
 
 ```{r, dpi=300, fig.align='center', fig.height = 10, fig.width = 10, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
