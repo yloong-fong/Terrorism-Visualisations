@@ -38,12 +38,13 @@ attack_count_decade <- usattacks_decade %>%
                 dplyr::mutate(provstate = reorder(provstate, n))
 ```
 
-```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', echo=FALSE}
+```{r, warning=FALSE,message=FALSE,error=FALSE, comment = '', fig.align='center', echo=FALSE}
 library(ggplot2)
 attack_decade_heatmap <- ggplot(data = attack_count_decade, aes(x = factor(attackdecade), y = reorder(provstate, n))) +
   geom_tile(aes(fill = n), colour = "yellow") + theme_grey(base_size = 9) + scale_fill_gradient(low = "light yellow", high = "brown") + labs(x = "Decade", y = "State", fill = "Frequency") + 
 scale_x_discrete(expand = c(0, 0)) +
-scale_y_discrete(expand = c(0, 0)) + theme(axis.text.x = element_text(angle = 90, hjust = 0.5)) + ggtitle("Number of attacks by state over decades") + theme(plot.title = element_text(hjust = 0.5))
+scale_y_discrete(expand = c(0, 0)) + theme(axis.text.x = element_text(angle = 90, hjust = 0.5)) + ggtitle("Number of attacks by state over decades") + theme(plot.title = element_text(hjust = 0.5)) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.ticks=element_blank())
 
 attack_decade_heatmap
 ```
